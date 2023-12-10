@@ -1,0 +1,61 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"unicode"
+)
+
+func getSumFromLine(line string) int {
+	strNum := ""
+	runes := []rune(line)
+
+	for _, s := range line {
+		if unicode.IsDigit(s) {
+			strNum += string(s)
+			break
+		}
+	}
+
+	for i := len(runes) - 1; i >= 0; i-- {
+		if unicode.IsDigit(runes[i]) {
+			strNum += string(runes[i])
+			break
+		}
+	}
+
+	sum, err := strconv.Atoi(strNum)
+	if err != nil {
+		sum = 0
+	}
+
+	fmt.Printf("Sum of line %s: %d \n", line, sum)
+
+	return sum
+}
+
+func main() {
+
+	file, err := os.Open("input.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var lines []string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+
+	totalSum := 0
+	for _, line := range lines {
+		totalSum += getSumFromLine(line)
+	}
+	fmt.Println("Total sum: ", totalSum)
+}

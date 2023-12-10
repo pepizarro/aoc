@@ -1,0 +1,101 @@
+package main
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+func readFile(filename string) ([]string, error) {
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, errors.New("error reading file")
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var lines []string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+
+	return lines, nil
+}
+
+func FewestCubesForGame(game string) map[string]int {
+	bag := map[string]int{
+		"red":   0,
+		"green": 0,
+		"blue":  0,
+	}
+
+	hands := strings.Split(game, ";")
+	for _, h := range hands {
+		re := regexp.MustCompile(`(\d+) (\w+)`)
+		matches := re.FindAllStringSubmatch(h, -1)
+		colorCounts := make(map[string]int)
+
+		for _, match := range matches {
+			count, err := strconv.Atoi(match[1])
+			if err != nil {
+				fmt.Printf("Error converting count to integer: %v\n", err)
+				continue
+			}
+
+			color := match[2]
+			colorCounts[color] = count
+			if count > bag[color] {
+				bag[color] = count
+			}
+		}
+	}
+
+	return bag
+}
+
+func getPowerOfGame(game string) int {
+	bag := FewestCubesForGame(game)
+
+	power := 1
+
+	for _, v := range bag {
+		power = v * power
+	}
+	fmt.Println("Power of ", bag, ": ", power)
+	return power
+}
+
+func getTotalPower(games []string) int {
+
+	totalPower := 0
+	for _, game := range games {
+		totalPower += getPowerOfGame(game)
+	}
+
+	return totalPower
+}
+
+func main() {
+
+	games, err := readFile("input.txt")
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	// bag := map[string]int{
+	// 	"red":   12,
+	// 	"green": 13,
+	// 	"blue":  14,
+	// }
+
+	fmt.Println("Total power", getTotalPower(games))
+
+}

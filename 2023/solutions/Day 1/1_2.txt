@@ -1,0 +1,102 @@
+package main
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"unicode"
+)
+
+func CheckNumberInString(line string) (int, error) {
+	nums := map[string]int{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+		"four":  4,
+		"five":  5,
+		"six":   6,
+		"seven": 7,
+		"eight": 8,
+		"nine":  9,
+	}
+
+	for k, v := range nums {
+		if strings.Contains(line, k) {
+			return v, nil
+		}
+	}
+
+	return 0, errors.New("there is no number")
+}
+
+func GetSumFromLine(line string) int {
+	strNum := ""
+	runes := []rune(line)
+
+	inOrder := ""
+	inReverse := ""
+
+	for i := 0; i < len(runes); i++ {
+		if unicode.IsDigit(runes[i]) {
+			strNum += string(runes[i])
+			break
+		} else {
+			inOrder += string(runes[i])
+			v, err := CheckNumberInString(inOrder)
+			if err == nil {
+				strNum += strconv.Itoa(v)
+				break
+			}
+		}
+	}
+
+	for j := len(runes) - 1; j >= 0; j-- {
+		if unicode.IsDigit(runes[j]) {
+			strNum += string(runes[j])
+			break
+		} else {
+			inReverse = string(runes[j]) + inReverse
+			v, err := CheckNumberInString(inReverse)
+			if err == nil {
+				strNum += strconv.Itoa(v)
+				break
+			}
+		}
+	}
+
+	sum, err := strconv.Atoi(strNum)
+	if err != nil {
+		sum = 0
+	}
+
+	fmt.Printf("Sum of line %s: %d \n", line, sum)
+
+	return sum
+}
+
+func main() {
+
+	file, err := os.Open("input.txt")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var lines []string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		lines = append(lines, line)
+	}
+
+	totalSum := 0
+	for _, line := range lines {
+		totalSum += GetSumFromLine(line)
+	}
+	fmt.Println("Total sum: ", totalSum)
+}
